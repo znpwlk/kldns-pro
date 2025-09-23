@@ -17,6 +17,8 @@ class Cloudflare implements DnsInterface
     private $url = "https://api.cloudflare.com/client/v4/";
     private $apiKey;
     private $email;
+    // 新增：zone 名称缓存，减少重复请求
+    private $zoneNameCache = [];
 
     function deleteDomainRecord($RecordId, $DomainId, $Domain)
     {
@@ -46,7 +48,7 @@ class Cloudflare implements DnsInterface
         if (!$ret) return [false, $error];
         if (isset($ret['result']['id'])) {
             $record = $ret['result'];
-            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
+            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $this->resolveZoneName($DomainId, $Domain);
             return [[
                 'RecordId' => $record['id'],
                 'Name' => $record['name'],
@@ -62,7 +64,7 @@ class Cloudflare implements DnsInterface
         if (!$ret) return [false, $error];
         if (isset($ret['result']['id'])) {
             $record = $ret['result'];
-            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
+            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $this->resolveZoneName($DomainId, $Domain);
             return [[
                 'RecordId' => $record['id'],
                 'Name' => $record['name'],
@@ -82,7 +84,7 @@ class Cloudflare implements DnsInterface
         if (isset($ret['result'])) {
             $list = [];
             foreach ($ret['result'] as $record) {
-                $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
+                $domainName = isset($record['zone_name']) ? $record['zone_name'] : $this->resolveZoneName($DomainId, $Domain);
                 $list[] = [
                     'RecordId' => $record['id'],
                     'Name' => $record['name'],
@@ -165,6 +167,22 @@ class Cloudflare implements DnsInterface
                 'tips' => 'Email address associated with your account'
             ]
         ];
+    }
+
+    // 新增：通过 ZoneId 反查 zone 名称（带内存缓存），当 $Domain 为空或接口返回缺少 zone_name 时使用
+    private function resolveZoneName($DomainId, $Domain = null)
+    {
+        if (!empty($Domain)) return $Domain;
+        if (empty($DomainId)) return null;
+        if (isset($this->zoneNameCache[$DomainId])) {
+            return $this->zoneNameCache[$DomainId];
+        }
+        list($ret, $error) = $this->getResult("zones/{$DomainId}");
+        if ($ret && isset($ret['result']['name'])) {
+            $this->zoneNameCache[$DomainId] = $ret['result']['name'];
+            return $this->zoneNameCache[$DomainId];
+        }
+        return null;
     }
 
     private function getResult($action, $params = [], $method = 'GET')
