@@ -33,7 +33,7 @@ class LogController extends Controller
         $action = $request->post('action');
         switch ($action) {
             case 'list':
-                return $this->list($request);
+                return $this->listLogs($request);
             case 'view':
                 return $this->view($request);
             case 'truncate':
@@ -45,7 +45,7 @@ class LogController extends Controller
         }
     }
 
-    private function list(Request $request)
+    private function listLogs(Request $request)
     {
         $dir = $this->logsPath();
         $files = @scandir($dir) ?: [];
