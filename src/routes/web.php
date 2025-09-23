@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,4 +102,9 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
             return view('admin.domain.record');
         });
     });
+
+    // 日志管理
+    Route::get('/logs', 'LogController@index');
+    Route::post('/logs', 'LogController@post');
+    Route::get('/logs/download', 'LogController@download');
 });

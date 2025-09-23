@@ -115,6 +115,11 @@
                     </li>
                 </ul>
             </div>
+            <div class="menu-item">
+                <a href="/admin/logs" class="menu-link">
+                    <i class="fa fa-clipboard-list"></i> 日志管理
+                </a>
+            </div>
         </div>
         <main class="col-12 col-md-9 col-xl-10 py-md-3 pl-md-5 bd-content">
             @yield('content')
