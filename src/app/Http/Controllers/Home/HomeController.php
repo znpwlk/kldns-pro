@@ -62,7 +62,7 @@ class HomeController extends Controller
             if ($ret) {
                 $result = ['status' => 0, 'message' => "已将认证邮件发送到{$user->email}，请注意查收！"];
             } else {
-                $result['message'] = "发送邮件失败：" . $error;
+                $result['message'] = "发送邮件失败:" . $error;
             }
         }
         return $result;
@@ -111,13 +111,27 @@ class HomeController extends Controller
             'value' => $request->post('value'),
             'line' => '默认'
         ];
-        list($check, $error) = Helper::checkDomainName($data['name']);
-        if (!$check) {
-            $result['message'] = $error;
-        } elseif ($id && !$record = DomainRecord::where('uid', Auth::id())->where('id', $id)->first()) {
+        $data['name'] = is_string($data['name']) ? trim($data['name']) : '';
+        $data['type'] = is_string($data['type']) ? strtoupper(trim($data['type'])) : '';
+        $data['value'] = is_string($data['value']) ? trim($data['value']) : '';
+        if (strpos($data['name'], '*') !== false) {
+            return ['status' => -1, 'message' => '不支持泛解析，请填写具体主机记录'];
+        }
+        if ($data['name'] !== '' && $data['name'] !== '@') {
+            list($check, $error) = Helper::checkDomainName($data['name']);
+            if (!$check) {
+                $result['message'] = $error;
+                return $result;
+            }
+        }
+        if ($id && !$record = DomainRecord::where('uid', Auth::id())->where('id', $id)->first()) {
             $result['message'] = '记录不存在';
         } elseif (!$data['value']) {
             $result['message'] = '请输入记录值';
+        } elseif (!in_array($data['type'], ['A', 'AAAA', 'CNAME', 'MX', 'TXT'])) {
+            $result['message'] = '不支持的记录类型';
+        } elseif ($data['name'] !== '' && $data['name'] !== '@' && strlen($data['name']) > 63) {
+            $result['message'] = '主机记录长度不能超过63字符';
         } elseif (!$id && DomainRecord::where('did', $data['did'])->where('name', $data['name'])->where('uid', '!=', Auth::id())->where('line_id', $data['line_id'])->first()) {
             $result['message'] = '此主机记录已被使用';
         } elseif (!$domain = Domain::available()->where('did', $data['did'])->first()) {
@@ -129,13 +143,58 @@ class HomeController extends Controller
         } else {
             $_dns->config($dns->config);
             $lines = $_dns->getRecordLine($domain->domain_id, $domain->domain);
+            $lineFound = false;
             foreach ($lines as $line) {
                 if ($line['Id'] == $data['line_id']) {
                     $data['line'] = $line['Name'];
+                    $lineFound = true;
+                }
+            }
+            if (!$lineFound) {
+                return ['status' => -1, 'message' => '请选择正确的线路'];
+            }
+            $label = ($data['name'] === '' || $data['name'] === '@') ? '@' : $data['name'];
+            $fullName = ($label === '@') ? $domain->domain : ($label . '.' . $domain->domain);
+            if ($data['type'] === 'A') {
+                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    return ['status' => -1, 'message' => 'A 记录值必须为合法 IPv4 地址'];
+                }
+                if ($data['value'] === '0.0.0.0' || strpos($data['value'], '127.') === 0) {
+                    return ['status' => -1, 'message' => '不允许使用无效或回环地址'];
+                }
+            } elseif ($data['type'] === 'AAAA') {
+                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                    return ['status' => -1, 'message' => 'AAAA 记录值必须为合法 IPv6 地址'];
+                }
+                $v = strtolower($data['value']);
+                if ($v === '::' || $v === '::1' || strpos($v, 'fe80:') === 0) {
+                    return ['status' => -1, 'message' => '不允许使用无效或链路本地地址'];
+                }
+            } elseif ($data['type'] === 'CNAME' || $data['type'] === 'MX') {
+                $host = rtrim($data['value'], '.');
+                if (!preg_match('/^(?=.{1,253}$)(?!-)(?:[A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/', $host)) {
+                    return ['status' => -1, 'message' => ($data['type'] === 'CNAME' ? 'CNAME' : 'MX') . ' 记录值必须为合法域名'];
+                }
+                $data['value'] = $host;
+                if (strtolower($host) === strtolower($fullName)) {
+                    return ['status' => -1, 'message' => '记录值不能指向自身'];
+                }
+            } elseif ($data['type'] === 'TXT') {
+                if (strlen($data['value']) > 255) {
+                    return ['status' => -1, 'message' => 'TXT 记录长度不能超过255'];
                 }
             }
             if ($id) {
-                //更新
+                $conflictQuery = DomainRecord::where('did', $data['did'])->where('name', $data['name'])->where('id', '!=', $id);
+                $existing = $conflictQuery->first();
+                if ($existing) {
+                    if ($data['type'] === 'CNAME' && $existing->type !== 'CNAME') {
+                        return ['status' => -1, 'message' => '已存在其它类型记录，不能添加/修改为 CNAME'];
+                    }
+                    if ($data['type'] !== 'CNAME' && $existing->type === 'CNAME') {
+                        return ['status' => -1, 'message' => '已存在 CNAME 记录，不能添加此类型'];
+                    }
+                }
                 list($ret, $error) = $_dns->updateDomainRecord($record->record_id, $data['name'], $data['type'], $data['value'], $data['line_id'], $domain->domain_id, $domain->domain);
                 if ($ret) {
                     if (DomainRecord::where('id', $id)->update($data)) {
@@ -147,7 +206,16 @@ class HomeController extends Controller
                     $result['message'] = '更新记录失败:' . $error;
                 }
             } else {
-                //添加
+                $conflictQuery = DomainRecord::where('did', $data['did'])->where('name', $data['name']);
+                $existing = $conflictQuery->first();
+                if ($existing) {
+                    if ($data['type'] === 'CNAME' && $existing->type !== 'CNAME') {
+                        return ['status' => -1, 'message' => '已存在其它类型记录，不能添加 CNAME'];
+                    }
+                    if ($data['type'] !== 'CNAME' && $existing->type === 'CNAME') {
+                        return ['status' => -1, 'message' => '已存在 CNAME 记录，不能添加此类型'];
+                    }
+                }
                 if ($domain->point > 0 && Auth::user()->point < $domain->point) {
                     $result['message'] = '账户剩余积分不足！';
                 } else {
