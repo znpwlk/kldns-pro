@@ -46,10 +46,11 @@ class Cloudflare implements DnsInterface
         if (!$ret) return [false, $error];
         if (isset($ret['result']['id'])) {
             $record = $ret['result'];
+            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
             return [[
                 'RecordId' => $record['id'],
                 'Name' => $record['name'],
-                'Domain' => $record['zone_name']
+                'Domain' => $domainName
             ], null];
         }
         return [false, '添加域名记录失败'];
@@ -61,12 +62,13 @@ class Cloudflare implements DnsInterface
         if (!$ret) return [false, $error];
         if (isset($ret['result']['id'])) {
             $record = $ret['result'];
+            $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
             return [[
                 'RecordId' => $record['id'],
                 'Name' => $record['name'],
                 'Type' => $record['type'],
                 'Value' => $record['content'],
-                'Domain' => $record['zone_name']
+                'Domain' => $domainName
             ], null];
         }
         return [false, '获取域名记录详情失败'];
@@ -80,12 +82,13 @@ class Cloudflare implements DnsInterface
         if (isset($ret['result'])) {
             $list = [];
             foreach ($ret['result'] as $record) {
+                $domainName = isset($record['zone_name']) ? $record['zone_name'] : $Domain; // 兼容缺少 zone_name 的情况
                 $list[] = [
                     'RecordId' => $record['id'],
                     'Name' => $record['name'],
                     'Type' => $record['type'],
                     'Value' => $record['content'],
-                    'Domain' => $record['zone_name']
+                    'Domain' => $domainName
                 ];
             }
             return [$list, null];
@@ -185,3 +188,4 @@ class Cloudflare implements DnsInterface
         return [false, '解析结果失败'];
     }
 }
+?>
