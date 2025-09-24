@@ -155,9 +155,15 @@ class HomeController extends Controller
             }
             $label = ($data['name'] === '' || $data['name'] === '@') ? '@' : $data['name'];
             $fullName = ($label === '@') ? $domain->domain : ($label . '.' . $domain->domain);
+            if ($data['type'] === 'CNAME' && $label === '@') {
+                return ['status' => -1, 'message' => '根域不支持 CNAME，请使用 A/AAAA'];
+            }
             if ($data['type'] === 'A') {
                 if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                     return ['status' => -1, 'message' => 'A 记录值必须为合法 IPv4 地址'];
+                }
+                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
                 }
                 if ($data['value'] === '0.0.0.0' || strpos($data['value'], '127.') === 0) {
                     return ['status' => -1, 'message' => '不允许使用无效或回环地址'];
@@ -165,6 +171,9 @@ class HomeController extends Controller
             } elseif ($data['type'] === 'AAAA') {
                 if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                     return ['status' => -1, 'message' => 'AAAA 记录值必须为合法 IPv6 地址'];
+                }
+                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
                 }
                 $v = strtolower($data['value']);
                 if ($v === '::' || $v === '::1' || strpos($v, 'fe80:') === 0) {
@@ -182,6 +191,12 @@ class HomeController extends Controller
             } elseif ($data['type'] === 'TXT') {
                 if (strlen($data['value']) > 255) {
                     return ['status' => -1, 'message' => 'TXT 记录长度不能超过255'];
+                }
+                if (preg_match('/[\x00-\x1F]/', $data['value'])) {
+                    return ['status' => -1, 'message' => 'TXT 记录不能包含控制字符'];
+                }
+                if (preg_match('/[^\x20-\x7E]/', $data['value'])) {
+                    return ['status' => -1, 'message' => 'TXT 记录仅支持 ASCII 可见字符'];
                 }
             }
             if ($id) {
