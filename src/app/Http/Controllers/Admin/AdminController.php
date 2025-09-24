@@ -24,6 +24,25 @@ class AdminController extends Controller
         switch ($action) {
             case 'profile':
                 return $this->profile($request);
+            case 'orderList':
+                $type = $request->post('type');
+                if ($type === 'point') {
+                    $list = \App\Models\PointOrder::query()->orderByDesc('id')->limit(200)->get();
+                    return ['status' => 0, 'data' => ['list' => $list->map(function($i){
+                        return [
+                            'id' => $i->id,
+                            'order_no' => $i->order_no,
+                            'user' => optional(\App\Models\User::query()->find($i->uid))->username,
+                            'amount' => $i->amount,
+                            'point' => $i->point,
+                            'status' => $i->status,
+                            'pay_type' => $i->pay_type,
+                            'trade_no' => $i->trade_no,
+                            'created_at' => $i->created_at,
+                        ];
+                    })]];
+                }
+                return ['status' => 1, 'message' => '类型错误'];
             default:
                 return ['status' => -1, 'message' => '对不起，此操作不存在！'];
         }

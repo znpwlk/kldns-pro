@@ -370,6 +370,45 @@
                 </div>
             </div>
         </div>
+        <div class="col-12 col-md-6 mt-2">
+            <div class="card">
+                <div class="card-header">
+                    易支付配置
+                </div>
+                <div class="card-body">
+                    <form id="form-domain">
+                        <input type="hidden" name="action" value="config">
+                        <div class="form-group">
+                            <label>是否允许购买积分</label>
+                            <select name="sys[user][point][buy_switch]" class="form-control">
+                                <option value="1" {{ intval(config('sys.user.point.buy_switch'))===1?'selected':'' }}>开启</option>
+                                <option value="0" {{ intval(config('sys.user.point.buy_switch'))===0?'selected':'' }}>关闭</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>购买比例（每1元兑换积分数）</label>
+                            <input type="number" name="sys[user][point][buy_ratio]" class="form-control" value="{{ config('sys.user.point.buy_ratio', 1) }}">
+                        </div>
+                        <hr>
+                        <div class="form-group">
+                            <label>易支付接口地址</label>
+                            <input type="text" name="sys[epay][api]" class="form-control" value="{{ config('sys.epay.api') }}" placeholder="https://你的易支付域名">
+                        </div>
+                        <div class="form-group">
+                            <label>商户ID</label>
+                            <input type="text" name="sys[epay][pid]" class="form-control" value="{{ config('sys.epay.pid') }}">
+                        </div>
+                        <div class="form-group">
+                            <label>商户密钥</label>
+                            <input type="password" name="sys[epay][key]" class="form-control" value="{{ config('sys.epay.key') }}">
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-info text-white float-right" @click="form('domain')">保存</a>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 @section('foot')

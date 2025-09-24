@@ -96,7 +96,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/admin/user/point">
+                        <a href="/admin/order/point">积分订单</a>
                             <i class="fa fa-caret-right"></i> 积分明细
                         </a>
                     </li>

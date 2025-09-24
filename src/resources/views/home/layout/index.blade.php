@@ -60,6 +60,12 @@
                 </a>
             </div>
             <div class="menu-item">
+                <a href="/home/pointBuy">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" fill="none"/></svg>
+                    购买积分
+                </a>
+            </div>
+            <div class="menu-item">
                 <a href="/home/profile" class="menu-link">
                     <i class="fa fa-user"></i> 个人信息
                 </a>

@@ -39,17 +39,23 @@ Route::get('cron/check/{key}', 'Index\IndexController@autoCheck');
 
 Route::post('check', 'Index\IndexController@check');
 
-Route::prefix('home')->middleware(['auth', 'auth.session:web'])->namespace('Home')->group(function () {
+Route::group(['prefix' => 'home', 'middleware' => ['auth', 'auth.session:web']], function () {
     Route::get('/', function () {
         return view('home.index');
     });
     Route::get('point', function () {
         return view('home.point');
     });
+    Route::get('pointBuy', function () {
+        return view('home.pointBuy');
+    });
     Route::get('profile', function () {
         return view('home.profile');
     });
-    Route::post('/', 'HomeController@post');
+    Route::get('order/point', function(){
+        return view('home.order.point');
+    });
+    Route::post('order/my', 'Home\HomeController@post');
 });
 
 Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespace('Admin')->group(function () {
@@ -110,8 +116,5 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
     Route::get('logs', 'LogController@index');
     Route::post('logs', 'LogController@post');
     Route::get('logs/download', 'LogController@download');
-    Route::group(['prefix' => '/pay'], function () {
-        Route::get('/', 'PayController@post');
-        Route::post('/', 'PayController@post');
-    });
+    Route::match(['GET','POST'], 'pay', 'PayController@post');
 });
