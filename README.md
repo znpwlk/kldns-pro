@@ -16,35 +16,8 @@
 ## 部署
 项目默认提供 Apache 的 .htaccess 重写支持；使用 Nginx 时需要在服务配置里开启“伪静态”（重写到前端控制器）。
 
-### Apache（已内置 .htaccess）
-- 直接部署到支持 .htaccess 的虚拟主机或 Apache 环境
-- 确保 PHP 与扩展满足 Laravel 版本所需
-
 ### Nginx 伪静态（rewrite 到 index.php）
-Nginx 不支持 .htaccess；所谓“伪静态”就是把非真实文件或目录的请求统一交给前端控制器 index.php，由框架路由处理。典型做法是在 Nginx 的 server 配置里使用 try_files：
-
-```
-server {
-    root /path/to/kldns-pro;
-    index index.php index.html;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 7d;
-        access_log off;
-    }
-}
-```
+N伪静态说明：参见 伪静态.md
 
 ## 环境要求（示例）
 - PHP 7.2+（或更高，按 composer.lock 约束为准）
