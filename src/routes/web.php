@@ -17,7 +17,7 @@ Route::any('login', 'Auth\LoginController@userLogin')->name('login');//登录
 Route::post('reg', 'Index\IndexController@reg');//注册
 Route::any('password', 'Index\IndexController@password');//找回密码
 Route::any('logout', 'Auth\LoginController@logout');//退出
-Route::middleware(['web'])->any('admin/login', 'Auth\LoginController@adminLogin');//后台登录
+Route::any('admin/login', 'Auth\LoginController@adminLogin');//后台登录
 Route::any('admin/logout', 'Auth\LoginController@adminLogout');//后台退出
 Route::any('verify', 'Index\IndexController@verify');//邮件认证
 Route::get('version', function () {

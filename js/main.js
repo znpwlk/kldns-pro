@@ -40,6 +40,36 @@ window.$post = function (url, params1, params2, func) {
                 }, function (i) {
                     window.location.reload();
                 });
+            } else if (request.status === 401) {
+                layer.close(load);
+                var go = '';
+                var msg = '登录已失效，请重新登录';
+                try {
+                    if (request.responseJSON && typeof request.responseJSON === 'object') {
+                        msg = request.responseJSON.message || msg;
+                        go = request.responseJSON.go || '';
+                    } else if (request.responseText) {
+                        var json = JSON.parse(request.responseText);
+                        msg = json.message || msg;
+                        go = json.go || '';
+                    }
+                } catch (e) {}
+                layer.alert(msg, { closeBtn: 0 }, function () {
+                    if (go) {
+                        location.href = go;
+                    } else {
+                        var p = location.pathname;
+                        if (/^\/admin/.test(p)) {
+                            location.href = '/admin/login?go=' + encodeURIComponent(location.href);
+                        } else {
+                            location.href = '/login?go=' + encodeURIComponent(location.href);
+                        }
+                    }
+                });
+            } else if (request.status === 403) {
+                layer.close(load);
+                var txt = '没有权限执行该操作';
+                layer.alert(txt);
             } else {
                 layer.close(load);
                 layer.alert('网络出错了，请稍后再试！' + request.status + ' ' + request.statusText);

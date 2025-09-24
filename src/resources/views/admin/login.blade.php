@@ -74,7 +74,12 @@
                     .then(function (data) {
                         $("#code").click();
                         if (data.status === 0) {
-                            location.href = data.go ? data.go : "{{ request()->get('go','/') }}";
+                            var back = window.$_GET('go');
+                            if (back) {
+                                location.href = back;
+                            } else {
+                                location.href = data.go || '/admin';
+                            }
                         } else {
                             layer.alert(data.message);
                         }
