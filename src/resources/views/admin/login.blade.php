@@ -11,7 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<div style="">
+<div>
     <div id="content">
         <div class="col-12 col-md-4 offset-md-4 mt-3 mt-sm-5">
             <div class="card mb-3">
