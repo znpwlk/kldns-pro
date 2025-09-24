@@ -97,34 +97,51 @@ class Helper
     //发送邮件
     public static function sendEmail($to, $subject, $view, $array = [])
     {
-        if (!config('sys.mail.host') || !config('sys.mail.port') || !config('sys.mail.username') || !config('sys.mail.password')) {
+        // 基础邮箱配置校验与防御处理
+        $sysMail = [
+            'host' => config('sys.mail.host'),
+            'port' => config('sys.mail.port'),
+            'username' => config('sys.mail.username'),
+            'password' => config('sys.mail.password'),
+            'encryption' => config('sys.mail.encryption'),
+        ];
+        if (!$sysMail['host'] || !$sysMail['port'] || !$sysMail['username'] || !$sysMail['password']) {
             return [false, "未配置邮箱信息"];
+        }
+        if (!static::checkEmail($to)) {
+            return [false, '测试邮箱地址格式不正确'];
+        }
+        // 兼容当 config('mail') 为 null 时的情况
+        $mailConfig = config('mail', []);
+        if (!is_array($mailConfig)) {
+            $mailConfig = [];
+        }
+        // 设置必要字段，避免数组下标为 null 的错误
+        $mailConfig['driver'] = $mailConfig['driver'] ?? 'smtp';
+        $mailConfig['host'] = $sysMail['host'];
+        $mailConfig['port'] = $sysMail['port'];
+        $mailConfig['username'] = $sysMail['username'];
+        $mailConfig['password'] = $sysMail['password'];
+        $mailConfig['encryption'] = $sysMail['encryption'] ?? null;
+        $mailConfig['from'] = [
+            'address' => $sysMail['username'],
+            'name' => config('sys.web.name', '二级域名分发')
+        ];
+        config(['mail' => $mailConfig]);
+
+        try {
+            Mail::send($view, $array, function ($message) use ($to, $subject) {
+                $message->to($to)->subject($subject);
+            });
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $message = $message ? mb_convert_encoding($e->getMessage(), 'UTF-8') : '发送邮件出错！';
+            return [false, $message];
+        }
+        if (count(Mail::failures()) < 1) {
+            return [true, null];
         } else {
-            $mailConfig = config('mail');
-            $mailConfig['host'] = config('sys.mail.host');
-            $mailConfig['port'] = config('sys.mail.port');
-            $mailConfig['username'] = config('sys.mail.username');
-            $mailConfig['password'] = config('sys.mail.password');
-            $mailConfig['encryption'] = config('sys.mail.encryption');
-            $mailConfig['from'] = [
-                'address' => config('sys.mail.username'),
-                'name' => config('sys.web.name', '二级域名分发')
-            ];
-            config(['mail' => $mailConfig]);
-            try {
-                Mail::send($view, $array, function ($message) use ($to, $subject) {
-                    $message->to($to)->subject($subject);
-                });
-            } catch (\Exception $e) {
-                $message = $e->getMessage();
-                $message = $message ? mb_convert_encoding($e->getMessage(), 'UTF-8') : '发送邮件出错！';
-                return [false, $message];
-            }
-            if (count(Mail::failures()) < 1) {
-                return [true, null];
-            } else {
-                return [false, Mail::failures()];
-            }
+            return [false, Mail::failures()];
         }
     }
 

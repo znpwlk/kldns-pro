@@ -111,6 +111,16 @@ class HomeController extends Controller
             'value' => $request->post('value'),
             'line' => '默认'
         ];
+        $cfg = [
+            'name_max_len' => intval(config('sys.record.name_max_len', 63)),
+            'forbid_cname_root' => intval(config('sys.record.forbid_cname_root', 1)) == 1,
+            'forbid_private_ip' => intval(config('sys.record.forbid_private_ip', 1)) == 1,
+            'forbid_invalid_ipv4' => intval(config('sys.record.forbid_invalid_ipv4', 1)) == 1,
+            'forbid_invalid_ipv6' => intval(config('sys.record.forbid_invalid_ipv6', 1)) == 1,
+            'forbid_cname_self' => intval(config('sys.record.forbid_cname_self', 1)) == 1,
+            'txt_max_len' => intval(config('sys.record.txt_max_len', 255)),
+            'txt_ascii_only' => intval(config('sys.record.txt_ascii_only', 1)) == 1,
+        ];
         $data['name'] = is_string($data['name']) ? trim($data['name']) : '';
         $data['type'] = is_string($data['type']) ? strtoupper(trim($data['type'])) : '';
         $data['value'] = is_string($data['value']) ? trim($data['value']) : '';
@@ -130,8 +140,8 @@ class HomeController extends Controller
             $result['message'] = '请输入记录值';
         } elseif (!in_array($data['type'], ['A', 'AAAA', 'CNAME', 'MX', 'TXT'])) {
             $result['message'] = '不支持的记录类型';
-        } elseif ($data['name'] !== '' && $data['name'] !== '@' && strlen($data['name']) > 63) {
-            $result['message'] = '主机记录长度不能超过63字符';
+        } elseif ($data['name'] !== '' && $data['name'] !== '@' && strlen($data['name']) > $cfg['name_max_len']) {
+            $result['message'] = '主机记录长度不能超过' . $cfg['name_max_len'] . '字符';
         } elseif (!$id && DomainRecord::where('did', $data['did'])->where('name', $data['name'])->where('uid', '!=', Auth::id())->where('line_id', $data['line_id'])->first()) {
             $result['message'] = '此主机记录已被使用';
         } elseif (!$domain = Domain::available()->where('did', $data['did'])->first()) {
@@ -155,29 +165,37 @@ class HomeController extends Controller
             }
             $label = ($data['name'] === '' || $data['name'] === '@') ? '@' : $data['name'];
             $fullName = ($label === '@') ? $domain->domain : ($label . '.' . $domain->domain);
-            if ($data['type'] === 'CNAME' && $label === '@') {
+            if ($cfg['forbid_cname_root'] && $data['type'] === 'CNAME' && $label === '@') {
                 return ['status' => -1, 'message' => '根域不支持 CNAME，请使用 A/AAAA'];
             }
             if ($data['type'] === 'A') {
                 if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                     return ['status' => -1, 'message' => 'A 记录值必须为合法 IPv4 地址'];
                 }
-                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                    return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
+                if ($cfg['forbid_private_ip']) {
+                    if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                        return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
+                    }
                 }
-                if ($data['value'] === '0.0.0.0' || strpos($data['value'], '127.') === 0) {
-                    return ['status' => -1, 'message' => '不允许使用无效或回环地址'];
+                if ($cfg['forbid_invalid_ipv4']) {
+                    if ($data['value'] === '0.0.0.0' || strpos($data['value'], '127.') === 0) {
+                        return ['status' => -1, 'message' => '不允许使用无效或回环地址'];
+                    }
                 }
             } elseif ($data['type'] === 'AAAA') {
                 if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                     return ['status' => -1, 'message' => 'AAAA 记录值必须为合法 IPv6 地址'];
                 }
-                if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                    return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
+                if ($cfg['forbid_private_ip']) {
+                    if (!filter_var($data['value'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                        return ['status' => -1, 'message' => '不允许使用私有或保留地址'];
+                    }
                 }
-                $v = strtolower($data['value']);
-                if ($v === '::' || $v === '::1' || strpos($v, 'fe80:') === 0) {
-                    return ['status' => -1, 'message' => '不允许使用无效或链路本地地址'];
+                if ($cfg['forbid_invalid_ipv6']) {
+                    $v = strtolower($data['value']);
+                    if ($v === '::' || $v === '::1' || strpos($v, 'fe80:') === 0) {
+                        return ['status' => -1, 'message' => '不允许使用无效或链路本地地址'];
+                    }
                 }
             } elseif ($data['type'] === 'CNAME' || $data['type'] === 'MX') {
                 $host = rtrim($data['value'], '.');
@@ -185,18 +203,20 @@ class HomeController extends Controller
                     return ['status' => -1, 'message' => ($data['type'] === 'CNAME' ? 'CNAME' : 'MX') . ' 记录值必须为合法域名'];
                 }
                 $data['value'] = $host;
-                if (strtolower($host) === strtolower($fullName)) {
+                if ($cfg['forbid_cname_self'] && strtolower($host) === strtolower($fullName)) {
                     return ['status' => -1, 'message' => '记录值不能指向自身'];
                 }
             } elseif ($data['type'] === 'TXT') {
-                if (strlen($data['value']) > 255) {
-                    return ['status' => -1, 'message' => 'TXT 记录长度不能超过255'];
+                if (strlen($data['value']) > $cfg['txt_max_len']) {
+                    return ['status' => -1, 'message' => 'TXT 记录长度不能超过' . $cfg['txt_max_len']];
                 }
-                if (preg_match('/[\x00-\x1F]/', $data['value'])) {
-                    return ['status' => -1, 'message' => 'TXT 记录不能包含控制字符'];
-                }
-                if (preg_match('/[^\x20-\x7E]/', $data['value'])) {
-                    return ['status' => -1, 'message' => 'TXT 记录仅支持 ASCII 可见字符'];
+                if ($cfg['txt_ascii_only']) {
+                    if (preg_match('/[\x00-\x1F]/', $data['value'])) {
+                        return ['status' => -1, 'message' => 'TXT 记录不能包含控制字符'];
+                    }
+                    if (preg_match('/[^\x20-\x7E]/', $data['value'])) {
+                        return ['status' => -1, 'message' => 'TXT 记录仅支持 ASCII 可见字符'];
+                    }
                 }
             }
             if ($id) {
@@ -259,49 +279,42 @@ class HomeController extends Controller
 
     private function recordList(Request $request)
     {
-        $data = DomainRecord::search()
-            ->where('uid', auth()->id())
-            ->orderBy('id', 'desc')
-            ->pageSelect();
+        $id = intval($request->post('id'));
+        $data = DomainRecord::where('uid', Auth::id())->where('did', $id)->orderBy('id', 'desc')->pageSelect();
         return ['status' => 0, 'message' => '', 'data' => $data];
     }
 
     private function domainList(Request $request)
     {
-        $data = Domain::with('dnsConfig')->available()->get();
-        $list = [];
-        foreach ($data as $domain) {
-            if ($dns = $domain->dnsConfig) {
-                if ($_dns = \App\Klsf\Dns\Helper::getModel($dns->dns)) {
-                    $_dns->config($dns->config);
-                    $list[] = [
-                        'did' => $domain->did,
-                        'domain' => $domain->domain,
-                        'point' => $domain->point,
-                        'desc' => $domain->desc,
-                        'line' => $_dns->getRecordLine()
-                    ];
-                }
-            }
-        }
-        return ['status' => 0, 'message' => '', 'data' => $list];
+        $data = Domain::available()->orderBy('did', 'desc')->pageSelect();
+        return ['status' => 0, 'message' => '', 'data' => $data];
     }
 
     private function recordDelete(Request $request)
     {
         $result = ['status' => -1];
         $id = intval($request->post('id'));
-        if (!$id || !$row = DomainRecord::where('id', $id)->where('uid', Auth::id())->first()) {
+        if (!$id || !$row = DomainRecord::where('uid', Auth::id())->where('id', $id)->first()) {
             $result['message'] = '记录不存在';
+        } elseif (!$domain = Domain::available()->where('did', $row->did)->first()) {
+            $result['message'] = '域名不存在，或无此权限';
+        } elseif (!$dns = $domain->dnsConfig) {
+            $result['message'] = '域名配置错误[No Config]';
+        } elseif (!$_dns = \App\Klsf\Dns\Helper::getModel($dns->dns)) {
+            $result['message'] = '域名配置错误[Unsupporte]';
         } else {
-            Helper::deleteRecord($row);
-            if ($row->delete()) {
-                $result = ['status' => 0, 'message' => '删除成功'];
+            $_dns->config($dns->config);
+            list($ret, $error) = $_dns->deleteDomainRecord($row->record_id, $domain->domain_id, $domain->domain);
+            if ($ret) {
+                if ($row->delete()) {
+                    $result = ['status' => 0, 'message' => '删除成功'];
+                } else {
+                    $result['message'] = '删除失败，请稍后再试！';
+                }
             } else {
-                $result['message'] = '删除失败，请稍后再试！';
+                $result['message'] = '删除记录失败:' . $error;
             }
         }
         return $result;
     }
-
 }

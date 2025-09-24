@@ -67,6 +67,7 @@
                                 </a>
                                 <a class="btn btn-sm btn-warning" :href="'/admin/user/point?uid='+row.uid">积分</a>
                                 <a class="btn btn-sm btn-primary" :href="'/admin/domain/record?uid='+row.uid">域名</a>
+                                <a v-if="row.gid!==99" class="btn btn-sm btn-secondary" @click="setAdmin(row.uid)">设为管理员</a>
                                 <a class="btn btn-sm btn-danger" @click="del(row.uid)">删除</a>
                             </td>
                         </tr>
@@ -227,6 +228,20 @@
                     if (!confirm('确认删除？')) return;
                     var vm = this;
                     this.$post("/admin/user", {action: 'delete', id: id})
+                        .then(function (data) {
+                            if (data.status === 0) {
+                                vm.getList();
+                                vm.$message(data.message, 'success');
+                            } else {
+                                vm.$message(data.message, 'error');
+                            }
+                        });
+                },
+                setAdmin: function (uid) {
+                    if (!confirm('确认设为管理员？')) return;
+                    if (!confirm('再次确认：设为管理员将授予后台权限')) return;
+                    var vm = this;
+                    this.$post('/admin/user', {action: 'setAdmin', uid: uid, act: 1})
                         .then(function (data) {
                             if (data.status === 0) {
                                 vm.getList();

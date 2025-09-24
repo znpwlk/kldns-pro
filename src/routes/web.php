@@ -66,6 +66,9 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
         Route::get('list', function () {
             return view('admin.user.list');
         });
+        Route::get('admin', function () {
+            return view('admin.user.admin');
+        });
 
         Route::post('group', 'UserGroupController@post');
         Route::get('group', function () {

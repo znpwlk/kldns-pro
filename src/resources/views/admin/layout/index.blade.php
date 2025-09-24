@@ -90,6 +90,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/admin/user/admin">
+                            <i class="fa fa-caret-right"></i> 管理员列表
+                        </a>
+                    </li>
+                    <li>
                         <a href="/admin/user/point">
                             <i class="fa fa-caret-right"></i> 积分明细
                         </a>

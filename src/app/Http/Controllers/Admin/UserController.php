@@ -30,6 +30,10 @@ class UserController extends Controller
                 return $this->update($request);
             case 'select':
                 return $this->select($request);
+            case 'adminSelect':
+                return $this->adminSelect($request);
+            case 'setAdmin':
+                return $this->setAdmin($request);
             case 'delete':
                 return $this->delete($request);
             default:
@@ -96,6 +100,39 @@ class UserController extends Controller
     {
         $data = User::search()->where('gid', '!=', 99)->orderBy('uid', 'desc')->pageSelect();
         return ['status' => 0, 'message' => '', 'data' => $data];
+    }
+
+    private function adminSelect(Request $request)
+    {
+        $data = User::search()->where('gid', 99)->orderBy('uid', 'desc')->pageSelect();
+        return ['status' => 0, 'message' => '', 'data' => $data];
+    }
+
+    private function setAdmin(Request $request)
+    {
+        $result = ['status' => -1];
+        $uid = intval($request->post('uid'));
+        $act = intval($request->post('act', 1));
+        if (!$uid || !$row = User::find($uid)) {
+            $result['message'] = '用户不存在';
+        } else {
+            if ($act === 1) {
+                if ($row->gid === 99) {
+                    $result['message'] = '该用户已是管理员';
+                } else {
+                    $ok = $row->update(['gid' => 99]);
+                    $result = $ok ? ['status' => 0, 'message' => '设为管理员成功'] : ['status' => -1, 'message' => '操作失败，请稍后再试！'];
+                }
+            } else {
+                if ($row->gid !== 99) {
+                    $result['message'] = '该用户不是管理员';
+                } else {
+                    $ok = $row->update(['gid' => 100]);
+                    $result = $ok ? ['status' => 0, 'message' => '已取消管理员'] : ['status' => -1, 'message' => '操作失败，请稍后再试！'];
+                }
+            }
+        }
+        return $result;
     }
 
     private function delete(Request $request)
