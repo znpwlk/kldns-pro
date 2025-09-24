@@ -41,8 +41,9 @@
     </ul>
 </header>
 <div class="container-fluid">
-    <div class="row flex-xl-nowrap">
-        <div class="col-12 col-md-3 col-xl-2 bd-sidebar">
+    <div class="layout-grid">
+        <aside class="bd-sidebar resizable-sidebar">
+            <div class="sidebar-resizer" title="拖动调整侧栏宽度"></div>
             <div class="menu-item">
                 <a href="/admin" class="menu-link">
                     <i class="fa fa-home"></i> 管理后台
@@ -125,8 +126,8 @@
                     <i class="fa fa-clipboard-list"></i> 日志管理
                 </a>
             </div>
-        </div>
-        <main class="col-12 col-md-9 col-xl-10 py-md-3 pl-md-5 bd-content">
+        </aside>
+        <main class="py-md-3 pl-md-5 bd-content">
             @yield('content')
         </main>
     </div>

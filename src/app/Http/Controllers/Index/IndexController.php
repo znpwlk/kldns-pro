@@ -260,7 +260,7 @@ class IndexController extends Controller
         // 获取验证码的内容
         $phrase = $builder->getPhrase();
         // 把内容存入session
-        Session::flash('captcha_code', $phrase);
+        Session::put('captcha_code', $phrase);
         // 生成图片
         $builder->output();
         $content = ob_get_clean();

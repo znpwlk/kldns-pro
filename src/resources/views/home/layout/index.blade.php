@@ -39,8 +39,9 @@
     </ul>
 </header>
 <div class="container-fluid">
-    <div class="row flex-xl-nowrap">
-        <div class="col-12 col-md-3 col-xl-2 bd-sidebar">
+    <div class="layout-grid">
+        <aside class="bd-sidebar resizable-sidebar">
+            <div class="sidebar-resizer" title="拖动调整侧栏宽度"></div>
             <div class="menu-item">
                 <a href="/home" class="menu-link">
                     <i class="fa fa-globe"></i> 解析记录
@@ -51,8 +52,8 @@
                     <i class="fa fa-cube"></i> 积分明细
                 </a>
             </div>
-        </div>
-        <main class="col-12 col-md-9 col-xl-10 py-md-3 pl-md-5 bd-content">
+        </aside>
+        <main class="py-md-3 pl-md-5 bd-content">
             @yield('content')
         </main>
     </div>
