@@ -360,7 +360,7 @@
                                     <label class="form-check-label">NS</label>
                                 </div>
                                 <div class="input_tips">未勾选则在用户端不展示，后端亦不允许提交。</div>
-                                <div class="input_tips">类型说明：A为IPv4地址；AAAA为IPv6地址；CNAME为别名指向其他域名；MX为邮件交换记录；TXT为文本记录（如SPF/DKIM/验证）；NS为域名服务器记录（常用于子域委派）。</div>
+                                <div class="input_tips">类型说明：A为IPv4地址；AAAA为IPv6地址；CNAME为别名指向其他域名；MX为邮件交换记录；TXT为文本记录（如SPF/DKIM/验证）；NS用于子域委派到其他权威DNS，不允许在根域设置。</div>
                             </div>
                         </div>
                     </form>

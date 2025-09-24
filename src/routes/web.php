@@ -110,4 +110,8 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
     Route::get('logs', 'LogController@index');
     Route::post('logs', 'LogController@post');
     Route::get('logs/download', 'LogController@download');
+    Route::group(['prefix' => '/pay'], function () {
+        Route::get('/', 'PayController@post');
+        Route::post('/', 'PayController@post');
+    });
 });

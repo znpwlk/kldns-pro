@@ -8,7 +8,7 @@ use PDO;
 
 class InstallController extends Controller
 {
-    private $version = '3.1.0';
+    private $version = '3.1.1';
 
     public function update()
     {
