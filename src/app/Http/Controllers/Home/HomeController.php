@@ -40,11 +40,24 @@ class HomeController extends Controller
         if (Auth::user()->status != 2) {
             return ['status' => -1, 'message' => "对不起，请先完成认证！<a href='/home/profile'>点击认证</a>"];
         }
-
+        $perm = config('sys.user_perm', []);
         switch ($action) {
             case 'recordStore':
+                $id = intval($request->post('id', 0));
+                if ($id > 0) {
+                    if (intval($perm['update'] ?? 1) !== 1) {
+                        return ['status' => -1, 'message' => '当前不允许修改记录'];
+                    }
+                } else {
+                    if (intval($perm['add'] ?? 1) !== 1) {
+                        return ['status' => -1, 'message' => '当前不允许添加记录'];
+                    }
+                }
                 return $this->recordStore($request);
             case 'recordDelete':
+                if (intval(($perm['delete'] ?? 1)) !== 1) {
+                    return ['status' => -1, 'message' => '当前不允许删除记录'];
+                }
                 return $this->recordDelete($request);
             default:
                 return ['status' => -1, 'message' => '对不起，此操作不存在！'];
@@ -71,6 +84,37 @@ class HomeController extends Controller
     private function profile(Request $request)
     {
         $result = ['status' => -1];
+        $email = trim((string)$request->post('email', ''));
+        if ($email !== '') {
+            $perm = intval(config('sys.user_perm.edit_email', 1));
+            if ($perm !== 1) {
+                return ['status' => -1, 'message' => '当前不允许修改邮箱'];
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return ['status' => -1, 'message' => '邮箱格式不正确'];
+            }
+            $user = Auth::user();
+            if (strcasecmp($email, (string)$user->email) === 0) {
+                return ['status' => 0, 'message' => '邮箱未变更'];
+            }
+            if (User::where('email', $email)->where('uid', '!=', Auth::id())->exists()) {
+                return ['status' => -1, 'message' => '该邮箱已被使用'];
+            }
+            if (User::where('uid', Auth::id())->update([
+                'email' => $email,
+                'status' => 1,
+            ])) {
+                $user->email = $email;
+                $user->status = 1;
+                list($ret, $error) = Helper::sendVerifyEmail($user);
+                if ($ret) {
+                    return ['status' => 0, 'message' => '邮箱已更新，认证邮件已发送，请查收'];
+                }
+                return ['status' => 0, 'message' => '邮箱已更新，发送认证邮件失败，请稍后重试'];
+            } else {
+                return ['status' => -1, 'message' => '修改失败，请稍后再试！'];
+            }
+        }
         $old_password = $request->post('old_password');
         $new_password = $request->post('new_password');
         if (strlen($old_password) < 5) {
@@ -111,6 +155,10 @@ class HomeController extends Controller
             'value' => $request->post('value'),
             'line' => '默认'
         ];
+        $allowedTypes = config('sys.user_perm.types', ['A','AAAA','CNAME','MX','TXT']);
+        if (!in_array($data['type'], $allowedTypes)) {
+            return ['status' => -1, 'message' => '记录类型不在允许范围'];
+        }
         $cfg = [
             'name_max_len' => intval(config('sys.record.name_max_len', 63)),
             'forbid_cname_root' => intval(config('sys.record.forbid_cname_root', 1)) == 1,

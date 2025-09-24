@@ -49,7 +49,16 @@
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">邮箱</label>
                             <div class="col-sm-9">
+                                @if(intval(config('sys.user_perm.edit_email', 1)) === 1)
+                                <div class="input-group">
+                                    <input type="text" name="email" class="form-control" value="{{ auth()->user()->email }}" placeholder="输入新邮箱">
+                                    <span class="input-group-append" @click="form('profile')">
+                                        <span class="input-group-text bg-info text-white">保存</span>
+                                    </span>
+                                </div>
+                                @else
                                 <input type="text" class="form-control" value="{{ auth()->user()->email }}" disabled>
+                                @endif
                             </div>
                         </div>
                         <div class="form-group row">

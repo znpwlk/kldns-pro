@@ -10,9 +10,11 @@
         <div class="card">
             <div class="card-header">
                 记录列表
+                @if(intval(config('sys.user_perm.add', 1)) === 1)
                 <a href="#modal-store" data-toggle="modal"
                    @click="storeInfo={did:domainList.length>0?domainList[0].did:0,line_id:0,type:'A'}"
                    class="float-right btn btn-sm btn-primary">添加</a>
+                @endif
             </div>
             <div class="card-header">
                 <div class="form-inline">
@@ -24,10 +26,12 @@
                         </select>
                     </div>
                     <div class="form-group ml-1">
-                        <select class="form-control" v-model="search.type">
-                            <option value="0">所有</option>
-                            <option value="A">A记录</option>
-                            <option value="CNAME">CANME</option>
+                        <select class="form-control" name="type" v-model="search.type">
+                            <option value="">全部</option>
+                            @php $types = config('sys.user_perm.types', ['A','AAAA','CNAME','MX','TXT']); @endphp
+                            @foreach($types as $t)
+                                <option value="{{ $t }}">{{ $t }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group ml-1">
@@ -36,7 +40,11 @@
                     <div class="form-group ml-1">
                         <input type="text" placeholder="记录值" class="form-control" v-model="search.value">
                     </div>
-                    <a class="btn btn-info ml-1" @click="getList(1)"><i class="fa fa-search"></i> 搜索</a></div>
+                    <a class="btn btn-info ml-1" @click="getList(1)"><i class="fa fa-search"></i> 搜索</a>
+                    @if(intval(config('sys.user_perm.add', 1)) === 1)
+                    <a class="btn btn-primary ml-1" href="#modal-store" data-toggle="modal" @click="storeInfo={did:domainList.length>0?domainList[0].did:0,line_id:0,type:'A'}">添加记录</a>
+                    @endif
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -65,10 +73,14 @@
                             <td>@{{ row.value }}</td>
                             <td>@{{ row.created_at }}</td>
                             <td>
+                                @if(intval(config('sys.user_perm.update', 1)) === 1)
                                 <a href="#modal-store" class="btn btn-sm btn-info" data-toggle="modal"
                                    @click="storeInfo=Object.assign({},row)">修改
                                 </a>
+                                @endif
+                                @if(intval(config('sys.user_perm.delete', 1)) === 1)
                                 <a class="btn btn-sm btn-danger" @click="del(row.id)">删除</a>
+                                @endif
                             </td>
                         </tr>
                         </tbody>
@@ -112,9 +124,11 @@
                             <div class="form-group row">
                                 <label for="staticEmail" class="col-sm-2 col-form-label">记录类型</label>
                                 <div class="col-sm-10">
+                                    @php $types = config('sys.user_perm.types', ['A','AAAA','CNAME','MX','TXT']); @endphp
                                     <select class="form-control" name="type" v-model="storeInfo.type">
-                                        <option value="A">A</option>
-                                        <option value="CNAME">CNAME</option>
+                                        @foreach($types as $t)
+                                            <option value="{{ $t }}">{{ $t }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -195,7 +209,7 @@
                         }
                     }
                     return [{Name: '默认', Id: 0}];
-                }
+                },
                 getList: function (page) {
                     var vm = this;
                     vm.search.page = typeof page === 'undefined' ? vm.search.page : page;

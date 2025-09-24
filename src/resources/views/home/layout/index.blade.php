@@ -47,9 +47,21 @@
                     <i class="fa fa-globe"></i> 解析记录
                 </a>
             </div>
+            @if(intval(config('sys.user_perm.add', 1)) === 1)
+            <div class="menu-item">
+                <a href="/home#add" class="menu-link">
+                    <i class="fa fa-plus"></i> 添加记录
+                </a>
+            </div>
+            @endif
             <div class="menu-item">
                 <a href="/home/point" class="menu-link">
                     <i class="fa fa-cube"></i> 积分明细
+                </a>
+            </div>
+            <div class="menu-item">
+                <a href="/home/profile" class="menu-link">
+                    <i class="fa fa-user"></i> 个人信息
                 </a>
             </div>
         </aside>
@@ -66,6 +78,20 @@
 <script src="/js/main.js"></script>
 <script>
     var showMenu = false;
+    $(function(){
+        if (window.innerWidth < 768) {
+            $(".bd-sidebar").removeClass('openMenu');
+            $(".bd-content").removeClass('moveRight');
+            showMenu = false;
+        }
+    });
+    $(window).on('resize', function(){
+        if (window.innerWidth < 768) {
+            $(".bd-sidebar").removeClass('openMenu');
+            $(".bd-content").removeClass('moveRight');
+            showMenu = false;
+        }
+    });
     $("#menu").click(function () {
         if (showMenu) {
             $(".bd-sidebar").removeClass('openMenu');

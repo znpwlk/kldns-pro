@@ -290,6 +290,81 @@
                 </div>
             </div>
         </div>
+        <div class="col-12 col-md-6 mt-2">
+            <div class="card">
+                <div class="card-header">
+                    权限配置
+                </div>
+                <div class="card-body">
+                    <form id="form-user_perm">
+                        <input type="hidden" name="action" value="config">
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">允许修改邮箱</label>
+                            <div class="col-sm-9">
+                                <select name="user_perm[edit_email]" class="form-control">
+                                    <option value="0" @if(config('sys.user_perm.edit_email',0)==0) selected @endif>关闭</option>
+                                    <option value="1" @if(config('sys.user_perm.edit_email',0)==1) selected @endif>开启</option>
+                                </select>
+                                <div class="input_tips">开启后，用户可修改邮箱，状态将变为待认证并需重新认证。</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">记录操作权限</label>
+                            <div class="col-sm-9">
+                                <div class="form-inline">
+                                    <label class="mr-2">添加</label>
+                                    <select name="user_perm[add]" class="form-control mr-3" style="width:100px">
+                                        <option value="0" @if(config('sys.user_perm.add',1)==0) selected @endif>否</option>
+                                        <option value="1" @if(config('sys.user_perm.add',1)==1) selected @endif>是</option>
+                                    </select>
+                                    <label class="mr-2">修改</label>
+                                    <select name="user_perm[update]" class="form-control mr-3" style="width:100px">
+                                        <option value="0" @if(config('sys.user_perm.update',1)==0) selected @endif>否</option>
+                                        <option value="1" @if(config('sys.user_perm.update',1)==1) selected @endif>是</option>
+                                    </select>
+                                    <label class="mr-2">删除</label>
+                                    <select name="user_perm[delete]" class="form-control" style="width:100px">
+                                        <option value="0" @if(config('sys.user_perm.delete',1)==0) selected @endif>否</option>
+                                        <option value="1" @if(config('sys.user_perm.delete',1)==1) selected @endif>是</option>
+                                    </select>
+                                </div>
+                                <div class="input_tips">关闭对应权限后，用户端将隐藏相关入口，后端也会拦截。</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">允许记录类型</label>
+                            <div class="col-sm-9">
+                                @php($types = config('sys.user_perm.types', ['A','AAAA','CNAME','MX','TXT']))
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="A" @if(in_array('A',$types)) checked @endif>
+                                    <label class="form-check-label">A</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="AAAA" @if(in_array('AAAA',$types)) checked @endif>
+                                    <label class="form-check-label">AAAA</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="CNAME" @if(in_array('CNAME',$types)) checked @endif>
+                                    <label class="form-check-label">CNAME</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="MX" @if(in_array('MX',$types)) checked @endif>
+                                    <label class="form-check-label">MX</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="TXT" @if(in_array('TXT',$types)) checked @endif>
+                                    <label class="form-check-label">TXT</label>
+                                </div>
+                                <div class="input_tips">未勾选则在用户端不展示，后端亦不允许提交。</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-info text-white float-right" @click="form('user_perm')">保存</a>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 @section('foot')
