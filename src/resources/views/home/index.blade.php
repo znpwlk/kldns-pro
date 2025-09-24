@@ -183,15 +183,19 @@
                 getLineList: function () {
                     for (var i = 0; i < this.domainList.length; i++) {
                         if (this.domainList[i].did === this.storeInfo.did) {
+                            var lines = this.domainList[i].line;
+                            if (!Array.isArray(lines) || lines.length === 0) {
+                                lines = [{Name: '默认', Id: 0}];
+                            }
                             if (this.selectDid != this.storeInfo.did) {
-                                this.storeInfo.line_id = this.domainList[i].line[0].Id;
+                                this.storeInfo.line_id = lines[0].Id;
                                 this.selectDid = this.storeInfo.did
                             }
-                            return this.domainList[i].line;
+                            return lines;
                         }
                     }
                     return [{Name: '默认', Id: 0}];
-                },
+                }
                 getList: function (page) {
                     var vm = this;
                     vm.search.page = typeof page === 'undefined' ? vm.search.page : page;
@@ -209,7 +213,11 @@
                     this.$post("/home", vm.search, {action: 'domainList'})
                         .then(function (data) {
                             if (data.status === 0) {
-                                vm.domainList = data.data
+                                var list = data.data && data.data.data ? data.data.data : [];
+                                vm.domainList = Array.isArray(list) ? list : [];
+                                if (vm.domainList.length === 0) {
+                                    vm.$message('当前无可用域名，请联系管理员分配权限', 'info');
+                                }
                             } else {
                                 vm.$message(data.message, 'error');
                             }

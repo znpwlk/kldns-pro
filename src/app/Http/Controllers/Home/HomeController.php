@@ -279,8 +279,7 @@ class HomeController extends Controller
 
     private function recordList(Request $request)
     {
-        $id = intval($request->post('id'));
-        $data = DomainRecord::where('uid', Auth::id())->where('did', $id)->orderBy('id', 'desc')->pageSelect();
+        $data = DomainRecord::where('uid', Auth::id())->search('web')->orderBy('id', 'desc')->pageSelect();
         return ['status' => 0, 'message' => '', 'data' => $data];
     }
 

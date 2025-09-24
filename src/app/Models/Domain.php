@@ -20,10 +20,12 @@ class Domain extends Model
     public function scopeAvailable($query, $gid = 0)
     {
         $gid = $gid ? $gid : (Auth::check() ? Auth::user()->gid : 0);
-        $query->where('groups', '0');
-        if ($gid > 0) {
-            $query->orWhereRaw(DB::raw("FIND_IN_SET('{$gid}',groups)"));
-        }
+        $query->where(function ($q) use ($gid) {
+            $q->where('groups', '0');
+            if ($gid > 0) {
+                $q->orWhereRaw("FIND_IN_SET(?, groups)", [$gid]);
+            }
+        });
     }
 
     public function dnsConfig()
