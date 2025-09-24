@@ -97,6 +97,9 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
         Route::get('check', function () {
             return view('admin.config.check');
         });
+        Route::get('pay', function(){
+            return view('admin.config.pay');
+        });
         Route::post('/', 'ConfigController@post');
     });
 
@@ -112,9 +115,12 @@ Route::prefix('admin')->middleware('auth:admin', 'auth.session:admin')->namespac
         });
     });
 
-    // 日志管理
+    Route::get('order/point', function(){
+        return view('admin.order.point');
+    });
+
     Route::get('logs', 'LogController@index');
     Route::post('logs', 'LogController@post');
     Route::get('logs/download', 'LogController@download');
-    Route::match(['GET','POST'], 'pay', 'PayController@post');
+    Route::match(['GET','POST'], 'pay', 'Admin\PayController@post');
 });

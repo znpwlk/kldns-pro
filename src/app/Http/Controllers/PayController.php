@@ -18,6 +18,8 @@ class PayController extends Controller
                 return $this->notify($request);
             case 'return':
                 return $this->payReturn($request);
+            case 'myOrders':
+                return $this->myOrders($request);
         }
         abort(404);
     }
@@ -94,6 +96,32 @@ class PayController extends Controller
         return redirect('/home')->with('message', $ok ? '充值成功' : '充值校验失败');
     }
 
+    private function myOrders(Request $request)
+    {
+        if (!auth()->check()) {
+            return ['code' => 401, 'message' => '未登录'];
+        }
+        $list = PointOrder::query()
+            ->where('uid', auth()->id())
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
+        $out = [];
+        foreach ($list as $i) {
+            $statusText = intval($i->status) === 1 ? '已入账' : (intval($i->status) === 0 ? '待支付' : '已关闭');
+            $out[] = [
+                'order_no' => (string)$i->order_no,
+                'amount' => number_format((float)$i->amount, 2, '.', ''),
+                'point' => intval($i->point),
+                'status' => intval($i->status),
+                'status_text' => $statusText,
+                'pay_type' => (string)($i->pay_type ?: 'alipay'),
+                'trade_no' => (string)($i->trade_no ?: ''),
+                'created_at' => (string)$i->created_at,
+            ];
+        }
+        return ['code' => 0, 'data' => $out];
+    }
     private function sign(array $data): string
     {
         ksort($data);

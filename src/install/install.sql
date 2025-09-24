@@ -99,3 +99,21 @@ CREATE TABLE `kldns_users` (
   KEY `username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8;
 INSERT INTO `kldns_users` VALUES ('99', '99', '1', 'admin', '$2y$10$v9PHTvnccjua/5FlAf/uFOVPprXxdWjoS54YnjmbQGGk8vDtxk9YS', 'tn38nVWJER1r0uj3oa222roN1E0sPYCDIUZIW30Yz6hR4U3DcHZU09l4gMsZ', '21c4bc5c23819b646aff4bb3196d6de5', null, '0', '1555212209', '1555408180');
+DROP TABLE IF EXISTS `kldns_point_orders`;
+CREATE TABLE `kldns_point_orders` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `order_no` varchar(40) NOT NULL,
+  `uid` int unsigned NOT NULL,
+  `amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `point` int NOT NULL DEFAULT 0,
+  `status` tinyint NOT NULL DEFAULT 0,
+  `pay_type` varchar(20) NOT NULL DEFAULT 'epay',
+  `trade_no` varchar(64) DEFAULT NULL,
+  `notify_data` text,
+  `ip` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_order_no` (`order_no`),
+  KEY `idx_uid` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

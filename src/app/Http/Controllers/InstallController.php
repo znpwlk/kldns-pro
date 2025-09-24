@@ -33,10 +33,11 @@ class InstallController extends Controller
                     $success = 0;
                     $error = 0;
                     $errorList = [];
+                    $ignoredList = [];
                     foreach ($sqls as $sql) {
                         $sql = trim($sql);
                         if (!empty($sql)) {
-                            if ($db->exec($sql) === false) {
+                            if (!$this->execSingleSqlWithIgnore($db, $sql, $ignoredList)) {
                                 $error++;
                                 $errorList[] = $db->errorInfo();
                             } else {
@@ -180,4 +181,20 @@ class InstallController extends Controller
         }
         return false;
     }
+
+    private function execSingleSqlWithIgnore(PDO $db, string $sql, array &$ignoredList): bool
+    {
+        $ret = $db->exec($sql);
+        if ($ret === false) {
+            $err = $db->errorInfo();
+            $code = isset($err[1]) ? (int)$err[1] : 0;
+            if (in_array($code, [1050, 1060, 1061, 1091], true)) {
+                $ignoredList[] = ['sql' => $sql, 'error' => $err];
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
 }
+

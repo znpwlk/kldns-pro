@@ -62,19 +62,27 @@ class ConfigController extends Controller
             if ($k != 'action') {
                 if (is_array($v)) {
                     if ($k === 'mail') {
-                        //邮件配置
                         $check = $this->mailCheck($v);
                         if ($check !== true) {
                             return ['status' => -1, 'message' => $check];
                         }
                     }
-
                     $k = "array_{$k}";
                     $v = json_encode($v);
                 }
                 Config::updateOrCreate(['k' => $k], ['v' => $v]);
             }
         }
+        $configs = Config::all();
+        $_configs = [];
+        foreach ($configs as $config) {
+            if (substr($config->k, 0, 6) === 'array_') {
+                $_configs[substr($config->k, 6)] = json_decode($config->v, true);
+            } else {
+                $_configs[$config->k] = $config->v;
+            }
+        }
+        \config(['sys' => $_configs]);
         return ['status' => 0, 'message' => '保存成功'];
     }
 

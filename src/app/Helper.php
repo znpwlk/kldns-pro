@@ -15,6 +15,24 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 
+if (!function_exists('safe_config_output')) {
+    /**
+     * Safely outputs a configuration value, handling arrays or other non-scalar types.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return string
+     */
+    function safe_config_output($key, $default = '')
+    {
+        $value = config($key, $default);
+        if (is_array($value)) {
+            return implode(',', $value);
+        }
+        return is_scalar($value) ? $value : (string)$default;
+    }
+}
+
 class Helper
 {
 //是否是Pjax请求

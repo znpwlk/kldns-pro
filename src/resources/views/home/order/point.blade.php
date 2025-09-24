@@ -29,9 +29,9 @@
 $(function(){
     var token = $('meta[name="csrf-token"]').attr('content');
     $.ajax({
-        url:'/home/order/my',
+        url:'/pay',
         method:'POST',
-        data:{},
+        data:{action:'myOrders'},
         headers:{'X-CSRF-TOKEN':token}
     }).done(function(res){
         if(res && res.code === 0 && Array.isArray(res.data)){

@@ -14,28 +14,28 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">站点名称</label>
                             <div class="col-sm-9">
                                 <input type="text" name="web[name]" class="form-control" placeholder="输入站点名称"
-                                       value="{{ config('sys.web.name') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.web.name') : (is_scalar(config('sys.web.name')) ? config('sys.web.name') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">首页标题</label>
                             <div class="col-sm-9">
                                 <input type="text" name="web[title]" class="form-control" placeholder="输入首页标题"
-                                       value="{{ config('sys.web.title') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.web.title') : (is_scalar(config('sys.web.title')) ? config('sys.web.title') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">网站关键词</label>
                             <div class="col-sm-9">
                                 <input type="text" name="web[keywords]" class="form-control" placeholder="输入网站关键词"
-                                       value="{{ config('sys.web.keywords') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.web.keywords') : (is_scalar(config('sys.web.keywords')) ? config('sys.web.keywords') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">网站描述</label>
                             <div class="col-sm-9">
                                 <textarea class="form-control" name="web[description]" placeholder="输入网站描述"
-                                >{{ config('sys.web.description') }}</textarea>
+                                >{{ function_exists('safe_config_output') ? safe_config_output('sys.web.description') : (is_scalar(config('sys.web.description')) ? config('sys.web.description') : '') }}</textarea>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -81,8 +81,8 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">开启注册</label>
                             <div class="col-sm-9">
                                 <select name="user[reg]" :value="{{ config('sys.user.reg',0) }}" class="form-control">
-                                    <option value="0">关闭注册</option>
-                                    <option value="1">开启注册</option>
+                                <option value="0">关闭注册</option>
+                                <option value="1">开启注册</option>
                                 </select>
                             </div>
                         </div>
@@ -101,7 +101,7 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">注册赠送积分</label>
                             <div class="col-sm-9">
                                 <input type="number" name="user[point]" class="form-control" placeholder="输入注册赠送积分"
-                                       value="{{ config('sys.user.point',0) }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.user.point',0) : (is_array($v = config('sys.user.point', 0)) ? 0 : $v) }}">
                             </div>
                         </div>
                     </form>
@@ -124,7 +124,7 @@
                             <label class="col-sm-3 col-form-label">记录名最大长度</label>
                             <div class="col-sm-9">
                                 <input type="number" name="record[name_max_len]" class="form-control" placeholder="输入最大长度"
-                                       value="{{ config('sys.record.name_max_len',63) }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.record.name_max_len',63) : (is_array($v = config('sys.record.name_max_len', 63)) ? 63 : $v) }}">
                                 <div class="input_tips">主机记录（例如 www、api）允许的最大字符数，通常不超过 63；过长会影响解析兼容性。</div>
                             </div>
                         </div>
@@ -182,7 +182,7 @@
                             <label class="col-sm-3 col-form-label">TXT最大长度</label>
                             <div class="col-sm-9">
                                 <input type="number" name="record[txt_max_len]" class="form-control" placeholder="输入最大长度"
-                                       value="{{ config('sys.record.txt_max_len',255) }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.record.txt_max_len',255) : (is_array($v = config('sys.record.txt_max_len', 255)) ? 255 : $v) }}">
                                 <div class="input_tips">单条 TXT 内容允许的最大长度，过长会影响兼容性与不同平台的解析限制。</div>
                             </div>
                         </div>
@@ -215,20 +215,20 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">SMTP服务器地址(host)</label>
                             <div class="col-sm-9">
                                 <input type="text" name="mail[host]" class="form-control" placeholder="SMTP服务器地址"
-                                       value="{{ config('sys.mail.host','smtp.qq.com') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.host','smtp.qq.com') : (is_scalar(config('sys.mail.host','smtp.qq.com')) ? config('sys.mail.host','smtp.qq.com') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">SMTP服务器端口(port)</label>
                             <div class="col-sm-9">
                                 <input type="text" name="mail[port]" class="form-control" placeholder="SMTP服务器端口"
-                                       value="{{ config('sys.mail.port','465') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.port','465') : (is_scalar(config('sys.mail.port','465')) ? config('sys.mail.port','465') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">加密类型</label>
                             <div class="col-sm-9">
-                                <select name="mail[encryption]" :value="'{{ config('sys.mail.encryption','ssl') }}'"
+                                <select name="mail[encryption]" :value="'{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.encryption','ssl') : (is_scalar(config('sys.mail.encryption','ssl')) ? config('sys.mail.encryption','ssl') : '') }}'"
                                         class="form-control">
                                     <option value="ssl">SSL</option>
                                     <option value="tls">TSL</option>
@@ -240,14 +240,14 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">邮箱账号</label>
                             <div class="col-sm-9">
                                 <input type="text" name="mail[username]" class="form-control" placeholder="邮箱账号"
-                                       value="{{ config('sys.mail.username') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.username') : (is_scalar(config('sys.mail.username')) ? config('sys.mail.username') : '') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">邮箱密码</label>
                             <div class="col-sm-9">
                                 <input type="text" name="mail[password]" class="form-control" placeholder="邮箱密码"
-                                       value="{{ config('sys.mail.password') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.password') : (is_scalar(config('sys.mail.password')) ? config('sys.mail.password') : '') }}">
                                 <div class="input_tips">这个密码可能不是邮箱登录密码，需要在邮箱里单独获取或者设置</div>
                             </div>
                         </div>
@@ -255,7 +255,7 @@
                             <label for="staticEmail" class="col-sm-3 col-form-label">发送测试</label>
                             <div class="col-sm-9">
                                 <input type="text" name="mail[test]" class="form-control" placeholder="输入一个邮箱地址"
-                                       value="{{ config('sys.mail.test','123456@qq.com') }}">
+                                       value="{{ function_exists('safe_config_output') ? safe_config_output('sys.mail.test','123456@qq.com') : (is_scalar(config('sys.mail.test','123456@qq.com')) ? config('sys.mail.test','123456@qq.com') : '') }}">
                                 <div class="input_tips">输入一个邮箱地址，用于测试发送邮件！</div>
                             </div>
                         </div>
@@ -279,7 +279,7 @@
                             <div class="col-sm-9">
                                 <textarea class="form-control" name="reserve_domain_name" placeholder="输入你想保留的域名前缀"
                                           rows="3"
-                                >{{ config('sys.reserve_domain_name') }}</textarea>
+                                >@php($__reserve = config('sys.reserve_domain_name')){{ is_array($__reserve) ? implode(',', $__reserve) : $__reserve }}</textarea>
                                 <div class="input_tips">多个用,隔开 举例：www,m,3g,4g</div>
                             </div>
                         </div>
@@ -370,45 +370,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-6 mt-2">
-            <div class="card">
-                <div class="card-header">
-                    易支付配置
-                </div>
-                <div class="card-body">
-                    <form id="form-domain">
-                        <input type="hidden" name="action" value="config">
-                        <div class="form-group">
-                            <label>是否允许购买积分</label>
-                            <select name="sys[user][point][buy_switch]" class="form-control">
-                                <option value="1" {{ intval(config('sys.user.point.buy_switch'))===1?'selected':'' }}>开启</option>
-                                <option value="0" {{ intval(config('sys.user.point.buy_switch'))===0?'selected':'' }}>关闭</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>购买比例（每1元兑换积分数）</label>
-                            <input type="number" name="sys[user][point][buy_ratio]" class="form-control" value="{{ config('sys.user.point.buy_ratio', 1) }}">
-                        </div>
-                        <hr>
-                        <div class="form-group">
-                            <label>易支付接口地址</label>
-                            <input type="text" name="sys[epay][api]" class="form-control" value="{{ config('sys.epay.api') }}" placeholder="https://你的易支付域名">
-                        </div>
-                        <div class="form-group">
-                            <label>商户ID</label>
-                            <input type="text" name="sys[epay][pid]" class="form-control" value="{{ config('sys.epay.pid') }}">
-                        </div>
-                        <div class="form-group">
-                            <label>商户密钥</label>
-                            <input type="password" name="sys[epay][key]" class="form-control" value="{{ config('sys.epay.key') }}">
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer">
-                    <a class="btn btn-info text-white float-right" @click="form('domain')">保存</a>
-                </div>
-            </div>
-        </div>
+
     </div>
 @endsection
 @section('foot')
@@ -428,8 +390,77 @@
                             }
                         });
                 },
+                loadEpayReco: function(){
+                    var box = document.getElementById('epay_reco');
+                    if(!box) return;
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET','https://znpwlk.github.io/kldns-api/pay.html',true);
+                    xhr.onreadystatechange=function(){
+                        if(xhr.readyState===4){
+                            if(xhr.status===200){
+                                try{
+                                    var text = xhr.responseText || '';
+                                    var lines = text.split(/\r?\n/).map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
+                                    var items = [];
+                                    var current = null;
+                                    var nameMatch;
+                                    for(var i=0;i<lines.length;i++){
+                                        var line = lines[i];
+                                        if((nameMatch = line.match(/^\[(\d+)\]\s*(.+)$/))){
+                                            if(current){ items.push(current); }
+                                            current = { name: nameMatch[2], desc: [], link: '', icon: '' };
+                                        }else if(/^链接\s*(https?:\/\/\S+)/i.test(line)){
+                                            var u = line.replace(/^链接\s*/i,'').trim();
+                                            current && (current.link = u);
+                                        }else if(/^图标\s*(https?:\/\/\S+)/i.test(line)){
+                                            var ic = line.replace(/^图标\s*/i,'').trim();
+                                            current && (current.icon = ic);
+                                        }else{
+                                            current && current.desc.push(line);
+                                        }
+                                    }
+                                    if(current){ items.push(current); }
+                                    while(box.firstChild){ box.removeChild(box.firstChild); }
+                                    if(!items.length){ box.appendChild(document.createTextNode('暂无推荐')); return; }
+                                    var frag = document.createDocumentFragment();
+                                    var urlOk = function(u){ return /^https?:\/\//i.test(u||''); };
+                                    items.forEach(function(it){
+                                        var row = document.createElement('div');
+                                        row.className='d-flex align-items-center py-1';
+                                        row.style.lineHeight='1.6';
+                                        if(urlOk(it.icon)){
+                                            var img=document.createElement('img');
+                                            img.width=18; img.height=18; img.alt=''; img.className='mr-2';
+                                            img.src=it.icon;
+                                            img.addEventListener('error', function(){ this.style.display='none'; });
+                                            row.appendChild(img);
+                                        }
+                                        var a = document.createElement('a');
+                                        a.className='mr-2'; a.target='_blank'; a.rel='noopener';
+                                        a.textContent = (it.name||'').slice(0,50);
+                                        if(urlOk(it.link)) a.href = it.link; else a.href = 'javascript:void(0)';
+                                        row.appendChild(a);
+                                        var span = document.createElement('span');
+                                        span.className='text-muted small';
+                                        var desc = (it.desc||[]).join(' ');
+                                        span.textContent = desc.length>120? (desc.slice(0,117)+'...') : desc;
+                                        row.appendChild(span);
+                                        frag.appendChild(row);
+                                    });
+                                    box.appendChild(frag);
+                                }catch(e){
+                                    box.textContent='暂无推荐';
+                                }
+                            }else{
+                                box.textContent='无法获取推荐';
+                            }
+                        }
+                    };
+                    xhr.send();
+                }
             },
             mounted: function () {
+                this.loadEpayReco();
             }
         });
     </script>

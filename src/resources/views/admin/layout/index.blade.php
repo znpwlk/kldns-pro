@@ -62,6 +62,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="/admin/config/pay">
+                            <i class="fa fa-caret-right"></i> 支付设置
+                        </a>
+                    </li>
+                    <li>
                         <a href="/admin/config/check">
                             <i class="fa fa-caret-right"></i> 自动检测
                         </a>
@@ -96,11 +101,16 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/admin/order/point">积分订单</a>
+                        <a href="/admin/order/point">
+                            <i class="fa fa-caret-right"></i> 积分订单
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/user/point">
                             <i class="fa fa-caret-right"></i> 积分明细
                         </a>
                     </li>
-                </ul>
+                 </ul>
             </div>
             <div class="menu-item">
                 <a class="menu-link" data-toggle="collapse" href="#menu-domain">

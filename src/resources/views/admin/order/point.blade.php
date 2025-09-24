@@ -28,26 +28,35 @@
 </div>
 <script>
 $(function(){
-    $.post('/admin', {action:'orderList', type:'point', _token: $('meta[name=csrf-token]').attr('content')}, function(res){
-        if(res.status===0){
-            var html=''
+    var token = $('meta[name=csrf-token]').attr('content')
+    $.post('/admin', {action:'orderList', type:'point', _token: token}, function(res){
+        if(res && res.status===0 && res.data && Array.isArray(res.data.list)){
+            var frag = document.createDocumentFragment()
             res.data.list.forEach(function(i){
-                html += '<tr>'+
-                    '<td>'+i.id+'</td>'+
-                    '<td>'+i.order_no+'</td>'+
-                    '<td>'+i.user+'</td>'+
-                    '<td>'+i.amount+'</td>'+
-                    '<td>'+i.point+'</td>'+
-                    '<td>'+(i.status==1?'已入账':'未支付')+'</td>'+
-                    '<td>'+i.pay_type+'</td>'+
-                    '<td>'+(i.trade_no||'')+'</td>'+
-                    '<td>'+i.created_at+'</td>'+
-                '</tr>'
+                var tr = document.createElement('tr')
+                function tdText(val){
+                    var td=document.createElement('td');
+                    $(td).text(val==null?'':String(val))
+                    return td
+                }
+                tr.appendChild(tdText(i.id))
+                tr.appendChild(tdText(i.order_no))
+                tr.appendChild(tdText(i.user))
+                tr.appendChild(tdText(i.amount))
+                tr.appendChild(tdText(i.point))
+                tr.appendChild(tdText(i.status==1?'已入账':'未支付'))
+                tr.appendChild(tdText(i.pay_type))
+                tr.appendChild(tdText(i.trade_no||''))
+                tr.appendChild(tdText(i.created_at))
+                frag.appendChild(tr)
             })
-            $('#list').html(html)
+            document.getElementById('list').innerHTML=''
+            document.getElementById('list').appendChild(frag)
         }else{
-            layer.msg(res.message||'加载失败')
+            layer.msg((res&&res.message)||'加载失败')
         }
+    }).fail(function(){
+        layer.msg('请求失败')
     })
 })
 </script>
