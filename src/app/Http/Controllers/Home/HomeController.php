@@ -186,7 +186,7 @@ class HomeController extends Controller
             $result['message'] = '记录不存在';
         } elseif (!$data['value']) {
             $result['message'] = '请输入记录值';
-        } elseif (!in_array($data['type'], ['A', 'AAAA', 'CNAME', 'MX', 'TXT'])) {
+        } elseif (!in_array($data['type'], $allowedTypes)) {
             $result['message'] = '不支持的记录类型';
         } elseif ($data['name'] !== '' && $data['name'] !== '@' && strlen($data['name']) > $cfg['name_max_len']) {
             $result['message'] = '主机记录长度不能超过' . $cfg['name_max_len'] . '字符';
@@ -266,6 +266,15 @@ class HomeController extends Controller
                         return ['status' => -1, 'message' => 'TXT 记录仅支持 ASCII 可见字符'];
                     }
                 }
++            } elseif ($data['type'] === 'NS') {
++                if ($label === '@') {
++                    return ['status' => -1, 'message' => '根域不支持 NS 委派，请在子域设置 NS'];
++                }
++                $host = rtrim($data['value'], '.');
++                if (!preg_match('/^(?=.{1,253}$)(?!-)(?:[A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/', $host)) {
++                    return ['status' => -1, 'message' => 'NS 记录值必须为合法域名'];
++                }
++                $data['value'] = $host;
             }
             if ($id) {
                 $conflictQuery = DomainRecord::where('did', $data['did'])->where('name', $data['name'])->where('id', '!=', $id);
@@ -277,6 +286,12 @@ class HomeController extends Controller
                     if ($data['type'] !== 'CNAME' && $existing->type === 'CNAME') {
                         return ['status' => -1, 'message' => '已存在 CNAME 记录，不能添加此类型'];
                     }
++                    if ($data['type'] === 'NS' && $existing->type !== 'NS') {
++                        return ['status' => -1, 'message' => '已存在其它类型记录，不能添加/修改为 NS'];
++                    }
++                    if ($data['type'] !== 'NS' && $existing->type === 'NS') {
++                        return ['status' => -1, 'message' => '已存在 NS 记录，不能添加此类型'];
++                    }
                 }
                 list($ret, $error) = $_dns->updateDomainRecord($record->record_id, $data['name'], $data['type'], $data['value'], $data['line_id'], $domain->domain_id, $domain->domain);
                 if ($ret) {
@@ -298,6 +313,12 @@ class HomeController extends Controller
                     if ($data['type'] !== 'CNAME' && $existing->type === 'CNAME') {
                         return ['status' => -1, 'message' => '已存在 CNAME 记录，不能添加此类型'];
                     }
++                    if ($data['type'] === 'NS' && $existing->type !== 'NS') {
++                        return ['status' => -1, 'message' => '已存在其它类型记录，不能添加 NS'];
++                    }
++                    if ($data['type'] !== 'NS' && $existing->type === 'NS') {
++                        return ['status' => -1, 'message' => '已存在 NS 记录，不能添加此类型'];
++                    }
                 }
                 if ($domain->point > 0 && Auth::user()->point < $domain->point) {
                     $result['message'] = '账户剩余积分不足！';

@@ -355,7 +355,12 @@
                                     <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="TXT" @if(in_array('TXT',$types)) checked @endif>
                                     <label class="form-check-label">TXT</label>
                                 </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="user_perm[types][]" value="NS" @if(in_array('NS',$types)) checked @endif>
+                                    <label class="form-check-label">NS</label>
+                                </div>
                                 <div class="input_tips">未勾选则在用户端不展示，后端亦不允许提交。</div>
+                                <div class="input_tips">类型说明：A为IPv4地址；AAAA为IPv6地址；CNAME为别名指向其他域名；MX为邮件交换记录；TXT为文本记录（如SPF/DKIM/验证）；NS为域名服务器记录（常用于子域委派）。</div>
                             </div>
                         </div>
                     </form>

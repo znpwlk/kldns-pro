@@ -130,6 +130,9 @@
                                             <option value="{{ $t }}">{{ $t }}</option>
                                         @endforeach
                                     </select>
++                                   <div style="border: 1px dashed #ced4da;border-radius: .25rem;padding: .375rem .75rem;margin-top: .25rem;font-size: 13px;color: #666;">
++                                       类型说明：A为IPv4地址；AAAA为IPv6地址；CNAME为别名指向其他域名；MX为邮件交换记录；TXT为文本记录（如SPF/DKIM/验证）。
++                                   </div>
                                 </div>
                             </div>
                             <div class="form-group row">
