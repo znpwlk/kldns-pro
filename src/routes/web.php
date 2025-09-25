@@ -38,6 +38,7 @@ Route::get('cache', function () {
 Route::get('cron/check/{key}', 'Index\IndexController@autoCheck');
 
 Route::post('check', 'Index\IndexController@check');
+Route::match(['GET','POST'], 'pay', 'PayController@post');
 
 Route::group(['prefix' => 'home', 'middleware' => ['auth', 'auth.session:web']], function () {
     Route::get('/', function () {
